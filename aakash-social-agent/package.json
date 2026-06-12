@@ -1,9 +1,0 @@
-{
-  "name": "aakash-social-agent",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Daily social media trends, reel hooks, and weekly content planner for Aakash Institute social media team.",
-  "engines": {
-    "node": ">=18"
-  }
-}
