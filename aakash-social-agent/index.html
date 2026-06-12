@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aakash Social Media Agent</title>
+<style>
+  :root {
+    --primary: #378ADD;
+    --primary-light: #E6F1FB;
+    --text-main: #1A1A1A;
+    --text-secondary: #555;
+    --text-tertiary: #999;
+    --border: #E2E2E2;
+    --bg: #F7F8FA;
+    --card-bg: #FFFFFF;
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --purple: #7F77DD;
+    --purple-light: #EEEDFE;
+    --orange: #EF9F27;
+    --orange-light: #FAEEDA;
+    --pink: #D4537E;
+    --pink-light: #FBEAF0;
+    --red: #E24B4A;
+    --red-light: #FCEBEB;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+  }
+  .container { max-width: 760px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { text-align: center; margin-bottom: 24px; }
+  header h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+  header p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+  /* Login */
+  .login-screen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; padding: 20px;
+  }
+  .login-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+    padding: 32px 28px; max-width: 360px; width: 100%; text-align: center;
+  }
+  .login-card h2 { font-size: 18px; margin-bottom: 6px; }
+  .login-card p { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+  .login-card input {
+    width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 10px;
+  }
+  .login-card button {
+    width: 100%; padding: 10px; font-size: 14px; font-weight: 500; color: #fff;
+    background: var(--primary); border: none; border-radius: 8px; cursor: pointer;
+  }
+  .login-error { color: var(--red); font-size: 12px; margin-top: 8px; min-height: 16px; }
+
+  /* Tabs */
+  .tab-row { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; background: var(--card-bg); }
+  .tab { flex: 1; padding: 10px 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary);
+    background: var(--bg); cursor: pointer; text-align: center; border: none; border-right: 1px solid var(--border); }
+  .tab:last-child { border-right: none; }
+  .tab.active { background: var(--card-bg); color: var(--text-main); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Controls */
+  .ptag-row, .filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .ptag {
+    display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--border); cursor: pointer; font-size: 12px; font-weight: 500;
+    color: var(--text-secondary); background: var(--card-bg); user-select: none;
+  }
+  .ptag.on { background: var(--primary-light); color: #0C447C; border-color: var(--primary); }
+
+  .ctrl-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .ctrl-row input, .ctrl-row select { font-size: 13px; height: 38px; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px; }
+  .ctrl-row input { flex: 1; min-width: 160px; }
+  .ctrl-row button {
+    height: 38px; padding: 0 16px; font-size: 13px; font-weight: 500; color: #fff;
+    background: var(--primary); border: none; border-radius: 8px; cursor: pointer; white-space: nowrap;
+  }
+  .ctrl-row button:disabled { opacity: 0.6; cursor: default; }
+
+  /* Result cards */
+  .result-area { display: flex; flex-direction: column; gap: 12px; }
+  .trend-card, .hook-card, .cal-day {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  }
+  .tc-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  .platform-pill { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 999px; }
+  .pill-ig { background: var(--pink-light); color: #72243E; }
+  .pill-yt { background: var(--red-light); color: #791F1F; }
+  .pill-x { background: var(--primary-light); color: #0C447C; }
+  .trend-name { font-size: 14px; font-weight: 600; }
+  .tc-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .tc-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
+  .content-ideas-label { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+  .idea-row { display: flex; gap: 8px; align-items: flex-start; }
+  .idea-format { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; margin-top: 2px; }
+  .fmt-reel { background: var(--purple-light); color: #3C3489; }
+  .fmt-carousel { background: var(--green-light); color: #085041; }
+  .fmt-static { background: var(--orange-light); color: #633806; }
+  .fmt-story { background: var(--pink-light); color: #72243E; }
+  .idea-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .engagement-tip { font-size: 12px; color: var(--text-tertiary); border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+
+  /* Hooks */
+  .hook-card { padding: 12px 16px; }
+  .hook-num { font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 4px; }
+  .hook-text { font-size: 15px; font-weight: 600; line-height: 1.45; margin-bottom: 6px; }
+  .hook-why { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* Week plan */
+  .cal-day-head { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--bg); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .cal-day-date { font-size: 13px; font-weight: 600; }
+  .cal-day-body { padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .cal-post-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .cal-post-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .cal-post-title { font-size: 14px; font-weight: 600; margin: 2px 0; }
+  .event-badge { font-size: 11px; font-weight: 500; background: var(--orange-light); color: #633806; padding: 2px 8px; border-radius: 4px; border-left: 2px solid var(--orange); }
+  .cat-label { font-size: 10px; font-weight: 500; color: var(--text-tertiary); padding: 2px 0; }
+
+  /* Misc */
+  .empty-state { text-align: center; padding: 40px 16px; color: var(--text-tertiary); font-size: 14px; }
+  .loading-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 28px; text-align: center; color: var(--text-tertiary); font-size: 13px; }
+  .error-card { background: var(--red-light); border: 1px solid #F09595; border-radius: 12px; padding: 14px 16px; color: #791F1F; font-size: 13px; }
+  .results-meta { font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px; }
+  .spinner {
+    display: inline-block; width: 14px; height: 14px; border: 2px solid var(--primary-light);
+    border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: -3px; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .custom-week-input { margin-bottom: 16px; display: none; }
+  .custom-week-input input { width: 100%; font-size: 13px; height: 38px; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <h2>Aakash Social Media Agent</h2>
+    <p>Enter the team password to continue</p>
+    <input type="password" id="login-password" placeholder="Password" />
+    <button onclick="login()">Enter</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="container" id="app" style="display:none">
+  <header>
+    <h1>Aakash Social Media Agent</h1>
+    <p>Daily trends, reel hooks &amp; weekly content plans for JEE/NEET content</p>
+  </header>
+
+  <div class="tab-row">
+    <button class="tab active" onclick="switchTab('trends')">📈 Daily trends</button>
+    <button class="tab" onclick="switchTab('hooks')">⚡ Reel hooks</button>
+    <button class="tab" onclick="switchTab('week')">📅 Week plan</button>
+  </div>
+
+  <!-- TRENDS PANEL -->
+  <div id="panel-trends" class="panel active">
+    <div class="ptag-row">
+      <span class="ptag on" data-val="Instagram">📸 Instagram</span>
+      <span class="ptag on" data-val="YouTube">▶️ YouTube</span>
+      <span class="ptag on" data-val="Twitter/X">🐦 Twitter/X</span>
+    </div>
+    <div class="ctrl-row">
+      <input type="text" id="trend-topic" placeholder="Optional: narrow by topic (e.g. NEET, JEE, study tips)..." />
+      <button onclick="fetchTrends()">🔎 Scan trends</button>
+    </div>
+    <div id="trend-results" class="result-area">
+      <div class="empty-state">Hit "Scan trends" to get today's top social media trends — mapped to Aakash content ideas.</div>
+    </div>
+  </div>
+
+  <!-- HOOKS PANEL -->
+  <div id="panel-hooks" class="panel">
+    <div class="ctrl-row">
+      <input type="text" id="hook-topic" placeholder="Topic or post idea (e.g. NEET result day, JEE tips)..." />
+      <select id="hook-format">
+        <option value="Reel">Reel</option>
+        <option value="Carousel">Carousel</option>
+        <option value="Static post">Static post</option>
+      </select>
+      <button onclick="fetchHooks()">⚡ Generate hooks</button>
+    </div>
+    <div id="hook-results" class="result-area">
+      <div class="empty-state">Enter a topic and format to get 5 scroll-stopping opening hooks.</div>
+    </div>
+  </div>
+
+  <!-- WEEK PLAN PANEL -->
+  <div id="panel-week" class="panel">
+    <div class="ctrl-row">
+      <select id="week-focus" style="flex:1">
+        <option value="Exam result week — rank reveals and student stories">Exam result week (rank reveals)</option>
+        <option value="Pre-exam motivation and revision tips week">Pre-exam motivation & revision week</option>
+        <option value="Counselling and admissions guidance week">Counselling & admissions week</option>
+        <option value="New batch enrolment and promotions week">New batch enrolment week</option>
+        <option value="custom">Custom week...</option>
+      </select>
+      <button onclick="fetchWeekPlan()">📅 Build week plan</button>
+    </div>
+    <div class="custom-week-input" id="custom-week-input">
+      <input type="text" id="custom-week-text" placeholder="Describe your week focus (e.g. exam tips week for Class 11)..." />
+    </div>
+    <div id="week-results" class="result-area">
+      <div class="empty-state">Pick a week focus and generate a ready-to-execute 7-day Instagram plan.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ---- Auth ----
+  function login() {
+    const pwd = document.getElementById('login-password').value;
+    if (!pwd) return;
+    sessionStorage.setItem('appPassword', pwd);
+    // Try a lightweight call to verify the password works
+    fetchHooksVerify(pwd);
+  }
+
+  async function fetchHooksVerify(pwd) {
+    try {
+      const res = await fetch('/api/hooks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-app-password': pwd },
+        body: JSON.stringify({ topic: 'test', format: 'Reel' })
+      });
+      if (res.status === 401) {
+        document.getElementById('login-error').textContent = 'Incorrect password';
+        sessionStorage.removeItem('appPassword');
+        return;
+      }
+      // Any non-401 means password is accepted (even if the call itself errors later)
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+    } catch (e) {
+      document.getElementById('login-error').textContent = 'Could not reach server. Try again.';
+    }
+  }
+
+  // Auto-login if password already stored this session
+  window.addEventListener('DOMContentLoaded', () => {
+    const stored = sessionStorage.getItem('appPassword');
+    if (stored) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+    }
+  });
+
+  // ---- Tabs ----
+  function switchTab(id) {
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['trends','hooks','week'][i] === id));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+  }
+
+  document.querySelectorAll('.ptag').forEach(t => t.addEventListener('click', () => t.classList.toggle('on')));
+
+  document.getElementById('week-focus').addEventListener('change', function () {
+    document.getElementById('custom-week-input').style.display = this.value === 'custom' ? 'block' : 'none';
+  });
+
+  // ---- Helpers ----
+  function pillClass(p) {
+    if (p.toLowerCase().includes('instagram')) return 'pill-ig';
+    if (p.toLowerCase().includes('youtube')) return 'pill-yt';
+    return 'pill-x';
+  }
+  function fmtClass(f) {
+    if (!f) return 'fmt-reel';
+    const fl = f.toLowerCase();
+    if (fl.includes('reel')) return 'fmt-reel';
+    if (fl.includes('carousel')) return 'fmt-carousel';
+    if (fl.includes('story')) return 'fmt-story';
+    return 'fmt-static';
+  }
+
+  async function callApi(endpoint, body, loadingEl) {
+    loadingEl.innerHTML = '<div class="loading-card"><span class="spinner"></span> Fetching fresh data...</div>';
+    const pwd = sessionStorage.getItem('appPassword');
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-app-password': pwd },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong');
+      return data;
+    } catch (err) {
+      loadingEl.innerHTML = `<div class="error-card"><strong>Something went wrong.</strong> ${err.message}</div>`;
+      return null;
+    }
+  }
+
+  // ---- Trends ----
+  async function fetchTrends() {
+    const platforms = [...document.querySelectorAll('.ptag.on')].map(t => t.dataset.val);
+    const el = document.getElementById('trend-results');
+    if (!platforms.length) { el.innerHTML = '<div class="error-card">Select at least one platform.</div>'; return; }
+    const topic = document.getElementById('trend-topic').value.trim();
+
+    const data = await callApi('/api/trends', { platforms, topic }, el);
+    if (!data) return;
+
+    const topicLabel = topic ? ` · "${topic}"` : '';
+    let html = `<div class="results-meta">${data.trends.length} trends · ${platforms.join(', ')}${topicLabel} · past 7 days</div>`;
+    for (const t of data.trends) {
+      const ideasHtml = (t.contentIdeas || []).map(i =>
+        `<div class="idea-row"><span class="idea-format ${fmtClass(i.format)}">${i.format}</span><span class="idea-text">${i.idea}</span></div>`
+      ).join('');
+      html += `<div class="trend-card">
+        <div class="tc-header"><span class="platform-pill ${pillClass(t.platform)}">${t.platform}</span><span class="trend-name">${t.trend}</span></div>
+        <div class="tc-body">
+          <div class="tc-desc"><strong>Why trending:</strong> ${t.whyTrending}</div>
+          <div class="tc-desc"><strong>Aakash angle:</strong> ${t.aakashAngle}</div>
+          <div class="content-ideas-label">Content ideas</div>
+          ${ideasHtml}
+          <div class="engagement-tip">💡 ${t.engagementTip}</div>
+        </div>
+      </div>`;
+    }
+    el.innerHTML = html;
+  }
+
+  // ---- Hooks ----
+  async function fetchHooks() {
+    const topic = document.getElementById('hook-topic').value.trim();
+    const format = document.getElementById('hook-format').value;
+    const el = document.getElementById('hook-results');
+    if (!topic) { el.innerHTML = '<div class="error-card">Enter a topic first.</div>'; return; }
+
+    const data = await callApi('/api/hooks', { topic, format }, el);
+    if (!data) return;
+
+    let html = '';
+    data.hooks.forEach((h, i) => {
+      html += `<div class="hook-card"><div class="hook-num">#${i+1} · ${h.style}</div><div class="hook-text">"${h.hook}"</div><div class="hook-why">${h.whyItWorks}</div></div>`;
+    });
+    el.innerHTML = html;
+  }
+
+  // ---- Week plan ----
+  async function fetchWeekPlan() {
+    const sel = document.getElementById('week-focus');
+    const focus = sel.value === 'custom' ? document.getElementById('custom-week-text').value.trim() : sel.value;
+    const el = document.getElementById('week-results');
+    if (!focus) { el.innerHTML = '<div class="error-card">Enter a week focus.</div>'; return; }
+
+    const data = await callApi('/api/week', { focus }, el);
+    if (!data) return;
+
+    const fmtC = { 'Reel':'fmt-reel', 'Carousel':'fmt-carousel', 'Static':'fmt-static', 'Story':'fmt-story' };
+    let html = '';
+    for (const d of data.plan) {
+      const fc = fmtC[d.format] || 'fmt-static';
+      html += `<div class="cal-day">
+        <div class="cal-day-head">
+          <span class="cal-day-date">${d.day}</span>
+          <span style="font-size:12px;color:var(--text-tertiary)">${d.date || ''}</span>
+          ${d.event ? `<span class="event-badge" style="margin-left:auto">${d.event}</span>` : ''}
+        </div>
+        <div class="cal-day-body">
+          <div class="cal-post-row">
+            <span class="idea-format ${fc}">${d.format}</span>
+            <span class="cat-label">${d.category}</span>
+          </div>
+          <div class="cal-post-title">${d.title}</div>
+          <div class="cal-post-text">${d.caption}</div>
+        </div>
+      </div>`;
+    }
+    el.innerHTML = html;
+  }
+</script>
+
+</body>
+</html>
