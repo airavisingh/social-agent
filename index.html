@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Aakash — Social Media Command Centre</title>
+<style>
+:root{
+  --navy:#20326F;--sky:#00A4ED;--yellow:#FFCE00;
+  --bg:#0F1117;--surface:#171B26;--surface2:#1E2333;--surface3:#252A3A;
+  --border:#2A3050;--border2:#3A4060;
+  --text:#F0F2F8;--text2:#A0AABF;--text3:#606880;
+  --green:#1DB97A;--green-bg:#0D2E1F;
+  --red:#E24B4A;--red-bg:#2A1010;
+  --amber:#EF9F27;--amber-bg:#2A1F08;
+  --purple:#7F77DD;--purple-bg:#1A1830;
+  --fire:#FF6B2B;--fire-bg:#2A1508;
+  --radius:8px;--radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px 36px;width:360px;text-align:center}
+.login-mark{width:48px;height:48px;background:var(--navy);border-radius:var(--radius);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px}
+.login-mark span{font-size:20px;font-weight:700;color:#fff;letter-spacing:-1px}
+.login-card h1{font-size:18px;font-weight:500;margin-bottom:4px}
+.login-card p{font-size:12px;color:var(--text2);margin-bottom:24px}
+.login-card input{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:13px;margin-bottom:10px;outline:none}
+.login-card input:focus{border-color:var(--sky)}
+.btn-primary{width:100%;padding:10px;background:var(--sky);border:none;border-radius:var(--radius);color:#fff;font-size:13px;font-weight:500;cursor:pointer}
+.login-err{color:var(--red);font-size:12px;margin-top:8px;min-height:16px}
+
+/* APP SHELL */
+.app{display:none;height:100vh;display:grid;grid-template-columns:220px 1fr;grid-template-rows:48px 1fr}
+.topbar{grid-column:1/-1;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:12px}
+.topbar-brand{display:flex;align-items:center;gap:8px;width:204px;flex-shrink:0}
+.brand-mark{width:28px;height:28px;background:var(--navy);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+.brand-name{font-size:12px;font-weight:500;color:var(--text);line-height:1.2}
+.brand-sub{font-size:10px;color:var(--text3)}
+.topbar-date{font-size:11px;color:var(--text3);margin-left:auto}
+.topbar-status{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green)}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+/* SIDEBAR */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:12px 0;overflow-y:auto;display:flex;flex-direction:column}
+.nav-section{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;padding:12px 14px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;border:none;background:none;color:var(--text2);font-size:12px;font-weight:400;width:100%;text-align:left;border-radius:0;transition:all 0.1s;position:relative}
+.nav-item:hover{color:var(--text);background:var(--surface2)}
+.nav-item.active{color:var(--sky);background:rgba(0,164,237,0.08)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:2px;background:var(--sky);border-radius:0 2px 2px 0}
+.nav-icon{font-size:14px;width:16px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--fire);color:#fff;font-size:9px;font-weight:600;padding:1px 5px;border-radius:999px}
+
+/* MAIN */
+.main{overflow-y:auto;background:var(--bg);display:flex;flex-direction:column}
+.panel{display:none;flex-direction:column;gap:14px;padding:16px;flex:1}
+.panel.active{display:flex}
+
+/* TYPOGRAPHY */
+.page-title{font-size:15px;font-weight:500;color:var(--text)}
+.page-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.section-label{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.card-sm{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+
+/* STAT CARDS */
+.stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.stat-val{font-size:24px;font-weight:500;color:var(--text);line-height:1}
+.stat-lbl{font-size:10px;color:var(--text3);margin-top:3px}
+.stat-delta{font-size:10px;color:var(--green);margin-top:2px}
+
+/* PRIORITY SCORES */
+.score{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.score-high{background:var(--fire-bg);color:var(--fire)}
+.score-med{background:var(--amber-bg);color:var(--amber)}
+.score-low{background:var(--surface3);color:var(--text3)}
+.prio-num{font-size:18px;font-weight:500;color:var(--sky)}
+
+/* PILLS / TAGS */
+.pill{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill-reel{background:rgba(127,119,221,0.2);color:var(--purple)}
+.pill-carousel{background:rgba(0,164,237,0.15);color:var(--sky)}
+.pill-static{background:rgba(239,159,39,0.15);color:var(--amber)}
+.pill-story{background:rgba(29,185,122,0.15);color:var(--green)}
+.pill-neet{background:rgba(29,185,122,0.15);color:var(--green)}
+.pill-jee{background:rgba(0,164,237,0.15);color:var(--sky)}
+.pill-topper{background:rgba(255,206,0,0.15);color:var(--yellow)}
+.pill-fire{background:var(--fire-bg);color:var(--fire)}
+
+/* OPPORTUNITY ROWS */
+.opp-row{border-bottom:1px solid var(--border);padding:10px 0;display:grid;align-items:start;gap:10px}
+.opp-row:last-child{border-bottom:none;padding-bottom:0}
+.opp-row:first-child{padding-top:0}
+.opp-title{font-size:12px;font-weight:500;color:var(--text);line-height:1.4}
+.opp-sub{font-size:11px;color:var(--text2);line-height:1.5;margin-top:2px}
+.opp-angle{font-size:11px;color:var(--sky);margin-top:3px}
+
+/* BUTTONS */
+.btn{height:32px;padding:0 14px;border-radius:var(--radius);border:none;font-size:12px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:opacity 0.1s}
+.btn:disabled{opacity:0.45;cursor:default}
+.btn-blue{background:var(--sky);color:#fff}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+
+/* INPUTS */
+.inp{height:32px;padding:0 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:12px;outline:none}
+.inp:focus{border-color:var(--sky)}
+select.inp{cursor:pointer}
+.inp-row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.inp-row .inp{flex:1;min-width:140px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;padding:0 8px 8px;text-align:left;border-bottom:1px solid var(--border)}
+.tbl td{padding:9px 8px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top;line-height:1.4}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td:first-child{color:var(--text)}
+
+/* HOOK CARDS */
+.hook-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:6px}
+.hook-card:last-child{margin-bottom:0}
+.hook-type{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px}
+.hook-text{font-size:13px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:4px}
+.hook-why{font-size:11px;color:var(--text2)}
+
+/* VAULT */
+.vault-col{display:flex;flex-direction:column;gap:5px}
+.vault-head{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+.vault-item{background:var(--surface2);border-radius:var(--radius);padding:8px 10px;display:flex;flex-direction:column;gap:2px;cursor:pointer;border:1px solid transparent}
+.vault-item:hover{border-color:var(--border2)}
+.vault-cat{font-size:9px;color:var(--text3)}
+.vault-idea{font-size:12px;color:var(--text);line-height:1.4}
+
+/* INSIGHTS */
+.insight-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.insight-row:last-child{border-bottom:none}
+.insight-num{font-size:16px;font-weight:500;color:var(--sky);min-width:52px;flex-shrink:0}
+.insight-text{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* BRIEF ITEMS */
+.brief-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.brief-item:last-child{border-bottom:none;padding-bottom:0}
+.brief-icon{width:28px;height:28px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.brief-icon.fire{background:var(--fire-bg)}
+.brief-icon.med{background:var(--amber-bg)}
+.brief-icon.skip{background:var(--surface3)}
+.brief-body{flex:1}
+.brief-title{font-size:12px;font-weight:500;color:var(--text);line-height:1.3}
+.brief-action{font-size:11px;color:var(--sky);margin-top:2px}
+.brief-reason{font-size:11px;color:var(--text2);margin-top:2px}
+.brief-prio{font-size:11px;font-weight:600;min-width:32px;text-align:right;flex-shrink:0}
+
+/* RECO */
+.reco-box{background:rgba(0,164,237,0.07);border:1px solid rgba(0,164,237,0.2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--sky);line-height:1.5;display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.reco-box:last-child{margin-bottom:0}
+
+/* CAROUSEL SLIDES */
+.slide-grid{display:flex;flex-direction:column;gap:6px}
+.slide-row{display:grid;grid-template-columns:28px 80px 1fr;gap:10px;align-items:start;padding:8px 0;border-bottom:1px solid var(--border)}
+.slide-row:last-child{border-bottom:none}
+.slide-num{font-size:16px;font-weight:500;color:var(--text3)}
+.slide-type{font-size:10px;font-weight:600;color:var(--text3)}
+.slide-content{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* COMP TABLE */
+.comp-row{display:grid;grid-template-columns:90px 1fr 70px 80px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);align-items:start}
+.comp-row:last-child{border-bottom:none}
+
+/* EMPTY / LOADING */
+.empty{padding:24px;text-align:center;color:var(--text3);font-size:12px}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--sky);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-box{background:var(--red-bg);border:1px solid rgba(226,75,74,0.3);border-radius:var(--radius);padding:8px 12px;font-size:12px;color:var(--red)}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.header-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* FILTER TAGS */
+.ftag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);cursor:pointer;font-size:11px;color:var(--text2);background:var(--surface2);user-select:none}
+.ftag.on{background:rgba(0,164,237,0.12);color:var(--sky);border-color:rgba(0,164,237,0.3)}
+.ftag-row{display:flex;gap:6px;flex-wrap:wrap}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:4px 0}
+
+/* NEWS */
+.news-item{padding:8px 0;border-bottom:1px solid var(--border)}
+.news-item:last-child{border-bottom:none;padding-bottom:0}
+.news-title{font-size:12px;font-weight:500;color:var(--text);line-height:1.35;margin-bottom:3px}
+.news-meta{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:8px}
+.news-relevance{font-size:11px;color:var(--sky);margin-top:3px}
+
+/* RESPONSIVE */
+@media(max-width:700px){.app{grid-template-columns:1fr}.sidebar{display:none}.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-card">
+    <div class="login-mark"><span>A</span></div>
+    <h1>Command Centre</h1>
+    <p>Aakash Institute · Social Media OS</p>
+    <input type="password" id="pwd" placeholder="Enter team password" onkeydown="if(event.key==='Enter')login()"/>
+    <button class="btn-primary" onclick="login()">Access dashboard</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app" style="display:none">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-mark">A</div>
+      <div><div class="brand-name">Aakash · Command Centre</div><div class="brand-sub">Social Media OS</div></div>
+    </div>
+    <div class="topbar-status"><div class="status-dot"></div>Live · Claude-powered</div>
+    <div class="topbar-date" id="topbar-date"></div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="nav-section">Overview</div>
+    <button class="nav-item active" onclick="show('brief')"><span class="nav-icon">☀️</span>Morning brief<span class="nav-badge">M1</span></button>
+    <button class="nav-item" onclick="show('dash')"><span class="nav-icon">📊</span>Dashboard<span class="nav-badge">M1</span></button>
+    <div class="nav-section">Intelligence</div>
+    <button class="nav-item" onclick="show('trends')"><span class="nav-icon">📈</span>Trends & news<span class="nav-badge">M3</span></button>
+    <button class="nav-item" onclick="show('opp')"><span class="nav-icon">⚡</span>Opportunities<span class="nav-badge">M4</span></button>
+    <button class="nav-item" onclick="show('comp')"><span class="nav-icon">🔍</span>Competitors<span class="nav-badge">M7</span></button>
+    <div class="nav-section">Content</div>
+    <button class="nav-item" onclick="show('cal')"><span class="nav-icon">📅</span>Calendar engine<span class="nav-badge">M2</span></button>
+    <button class="nav-item" onclick="show('hooks')"><span class="nav-icon">🎣</span>Reel hooks<span class="nav-badge">M5</span></button>
+    <button class="nav-item" onclick="show('carousel')"><span class="nav-icon">🃏</span>Carousel gen<span class="nav-badge">M6</span></button>
+    <button class="nav-item" onclick="show('vault')"><span class="nav-icon">💡</span>Idea vault<span class="nav-badge">M9</span></button>
+    <div class="nav-section">Analytics</div>
+    <button class="nav-item" onclick="show('reports')"><span class="nav-icon">📉</span>Reports<span class="nav-badge">M8</span></button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- M1a: MORNING BRIEF -->
+    <div id="panel-brief" class="panel active">
+      <div class="page-header">
+        <div><div class="page-title">☀️ Morning brief</div><div class="page-sub">Your daily social media operating agenda — generated by Claude</div></div>
+        <div class="header-actions"><button class="btn btn-blue" id="btn-brief" onclick="fetchBrief()">▶ Generate today's brief</button></div>
+      </div>
+      <div class="card" id="brief-results"><div class="empty">Click "Generate today's brief" to get your morning briefing — trending opportunities, competitor highlights, and what to post today.</div></div>
+    </div>
+
+    <!-- M1b: DASHBOARD -->
+    <div id="panel-dash" class="panel">
+      <div class="page-header">
+        <div><div class="page-title">Executive dashboard</div><div class="page-sub">Real-time snapshot of opportunities, inventory, and events</div></div>
+        <button class="btn btn-blue" id="btn-dash" onclick="fetchDash()">▶ Refresh dashboard</button>
+      </div>
+      <div class="grid4">
+        <div class="stat-card"><div class="stat-val" id="d-opportunities">—</div><div class="stat-lbl">Live opportunities</div></div>
+        <div class="stat-card"><div class="stat-val" id="d-trending">—</div><div class="stat-lbl">Trending topics</div></div>
+        <div class="stat-card"><div class="stat-val" id="d-events">—</div><div class="stat-lbl">Upcoming events</div></div>
+        <div class="stat-card"><div class="stat-val" id="d-priority">—</div><div class="stat-lbl">Top priority score</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><div class="section-label">🔥 Top opportunities right now</div><div id="dash-opp"><div class="empty">Refresh to load.</div></div></div>
+        <div class="card"><div class="section-label">📆 Upcoming events & dates</div><div id="dash-events"><div class="empty">Refresh to load.</div></div></div>
+      </div>
+      <div class="card"><div class="section-label">Content inventory status</div><div id="dash-inventory"><div class="empty">Refresh to load.</div></div></div>
+    </div>
+
+    <!-- M3: TRENDS & NEWS -->
+    <div id="panel-trends" class="panel">
+      <div class="page-header">
+        <div><div class="page-title">Trends & news intelligence</div><div class="page-sub">Live scan — social platforms + education sources</div></div>
+        <button class="btn btn-blue" id="btn-trends" onclick="fetchTrends()">▶ Scan now</button>
+      </div>
+      <div class="ftag-row">
+        <span class="ftag on" data-val="Instagram">📸 Instagram</span>
+        <span class="ftag on" data-val="YouTube Shorts">▶ YouTube Shorts</span>
+        <span class="ftag on" data-val="Twitter/X">𝕏 Twitter/X</span>
+        <span class="ftag on" data-val="NEET">NEET</span>
+        <span class="ftag on" data-val="JEE">JEE</span>
+        <span class="ftag" data-val="NTA">NTA</span>
+        <span class="ftag" data-val="AIIMS">AIIMS</span>
+        <span class="ftag" data-val="Counselling">Counselling</span>
+      </div>
+      <div class="card">
+        <table class="tbl" style="width:100%">
+          <thead><tr><th>Trend</th><th>Platform</th><th>Opportunity</th><th>Priority</th><th>Reason</th></tr></thead>
+          <tbody id="trends-tbody"><tr><td colspan="5"><div class="empty">Select platforms above and click "Scan now".</div></td></tr></tbody>
+        </table>
+      </div>
+      <div class="grid2">
+        <div class="card"><div class="section-label">📰 NTA & exam updates</div><div id="news-nta"><div class="empty">Scan to load.</div></div></div>
+        <div class="card"><div class="section-label">🔥 Education social buzz</div><div id="news-social"><div class="empty">Scan to load.</div></div></div>
+      </div>
+    </div>
+
+    <!-- M4: OPPORTUNITIES -->
+    <div id="panel-opp" class="panel">
+      <div class="page-header">
+        <div><div class="page-title">Content opportunity engine</div><div class="page-sub">Convert any trend into Reel + Carousel + Static — with hooks and CTAs</div></div>
+        <button class="btn btn-blue" id="btn-opp" onclick="fetchOpp()">▶ Generate opportunities</button>
+      </div>
+      <div class="inp-row">
+        <input class="inp" id="opp-topic" placeholder="Topic or trend (e.g. NEET AIR 1 interview, counselling anxiety, IIT campus)..." style="flex:1"/>
+      </div>
+      <div id="opp-results"><div class="empty">Enter a topic or click generate to convert live trends into content opportunities.</div></div>
+    </div>
+
+    <!-- M7: COMPETITORS -->
+    <div id="panel-comp" class="panel">
+      <div class="page-header">
+        <div><div class="page-title">Competitor intelligence</div><div class="page-sub">Allen · Physics Wallah · Unacademy · Vedantu — extract learnings, never copy</div></div>
+        <button class="btn btn-blue" id="btn-comp" onclick="fetchComp()">▶ Analyse competitors</button>
+      </div>
+      <div class="card">
+        <div style="display:grid;grid-template-columns:90px 1fr 70px 80px 1fr;gap:10px;margin-bottom:8px">
+          <div class="section-label">Brand</div><div class="section-label">Best recent content</div><div class="section-label">Format</div><div class="section-label">Why it worked</div><div class="section-label">Aakash advantage</div>
+        </div>
+        <div id="comp-tbody"><div class="empty">Click "Analyse competitors" to scan competitor social activity.</div></div>
+      </div>
+    </div>
+
+    <!-- M2: CALENDAR -->
+    <div id="panel-cal" class="panel">
+      <div class="page-header">
+        <div><div class="page-title">Content calendar engine</div><div class="page-sub">Monthly calendars with pillars, hooks, dates, and formats — auto-generated</div></div>
+        <div class="header-actions">
+          <select class="inp" id="cal-focus" style="width:220px">
+            <option>Re-NEET exam week (Jun 16–22 2026)</option>
+            <option>Post-NEET result + counselling (Jun 23–29)</option>
+            <option>NEET result + rank reveals (Jul 1–7)</option>
+            <option>Enrolment push + new batch (Jul 8–14)</option>
+            <option>Foundation & Olympiad month</option>
+            <option value="custom">Custom period...</option>
+          </select>
+          <button class="btn btn-blue" id="btn-cal" onclick="fetchCal()">▶ Generate calendar</button>
+        </div>
+      </div>
+      <div id="custom-cal" style="display:none"><input class="inp" id="cal-custom" placeholder="Describe your period (e.g. JEE Mains prep month for Class 12)..." style="width:100%"/></div>
+      <div class="grid4">
+        <div class="stat-card"><div class="stat-val">8</div><div class="stat-lbl">Content pillars</div></div>
+        <div class="stat-card"><div class="stat-val">7</div><div class="stat-lbl">Posts this week</div></div>
+        <div class="stat-card"><div class="stat-val" id="cal-events">3</div><div class="stat-lbl">Key dates</div></div>
+        <div class="stat-card"><div class="stat-val">Mix</div><div class="stat-lbl">Reel · Carousel · Static</div></div>
+      </div>
+      <div class="card">
+        <table class="tbl" style="width:100%">
+          <thead><tr><th>Date</th><th>Pillar</th><th>Content type</th><th>Objective</th><th>Suggested hook</th><th>Format</th></tr></thead>
+          <tbody id="cal-tbody"><tr><td colspan="6"><div class="empty">Select a period and generate your calendar.</div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- M5: HOOKS -->
+    <div id="panel-hooks" class="panel">
+      <div class="page-header">
+        <div><div class="page-title">Reel hook generator</div><div class="page-sub">Curiosity · Emotional · Contrarian · Story · Hinglish</div></div>
+      </div>
+      <div class="card">
+        <div class="section-label">Input</div>
+        <div class="inp-row">
+          <input class="inp" id="hook-topic" placeholder="Topic — e.g. NEET AIR 5, JEE dropper who cracked IIT Bombay, study hack..." style="flex:1"/>
+          <select class="inp" id="hook-format" style="width:120px;flex:none">
+            <option>Reel</option><option>Carousel</option><option>Static post</option>
+          </select>
+          <button class="btn btn-blue" id="btn-hooks" onclick="fetchHooks()">▶ Generate hook bank</button>
+        </div>
+      </div>
+      <div class="grid2" id="hooks-results"><div class="empty" style="grid-column:1/-1">Enter a topic above to generate your hook bank.</div></div>
+    </div>
+
+    <!-- M6: CAROUSEL -->
+    <div id="panel-carousel" class="panel">
+      <div class="page-header">
+        <div><div class="page-title">Carousel generator</div><div class="page-sub">6-slide structure optimised for saves and shares</div></div>
+      </div>
+      <div class="card">
+        <div class="section-label">Input</div>
+        <div class="inp-row">
+          <input class="inp" id="car-topic" placeholder="Topic — e.g. Common NEET Biology mistakes, JEE counselling steps, AIR 5 daily routine..." style="flex:1"/>
+          <button class="btn btn-blue" id="btn-car" onclick="fetchCarousel()">▶ Generate carousel</button>
+        </div>
+      </div>
+      <div id="car-results"><div class="empty">Enter a topic and generate a complete 6-slide carousel structure.</div></div>
+    </div>
+
+    <!-- M9: VAULT -->
+    <div id="panel-vault" class="panel">
+      <div class="page-header">
+        <div><div class="page-title">Content idea vault</div><div class="page-sub">30 ready-to-use ideas — 10 Reels · 10 Carousels · 10 Statics</div></div>
+        <button class="btn btn-blue" id="btn-vault" onclick="fetchVault()">▶ Refresh vault</button>
+      </div>
+      <div class="grid3" id="vault-grid">
+        <div class="vault-col"><div class="vault-head"><span>🎬 Reels</span><span>10</span></div><div class="empty">Refresh to load.</div></div>
+        <div class="vault-col"><div class="vault-head"><span>🃏 Carousels</span><span>10</span></div></div>
+        <div class="vault-col"><div class="vault-head"><span>🖼 Statics</span><span>10</span></div></div>
+      </div>
+    </div>
+
+    <!-- M8: REPORTS -->
+    <div id="panel-reports" class="panel">
+      <div class="page-header">
+        <div><div class="page-title">Analytics & reporting</div><div class="page-sub">Performance insights + agent recommendations</div></div>
+        <button class="btn btn-blue" id="btn-reports" onclick="fetchReports()">▶ Generate insights</button>
+      </div>
+      <div class="grid4">
+        <div class="stat-card"><div class="stat-val" id="r-followers">—</div><div class="stat-lbl">Followers</div><div class="stat-delta" id="r-fdelta"></div></div>
+        <div class="stat-card"><div class="stat-val" id="r-reach">—</div><div class="stat-lbl">Avg reach / post</div></div>
+        <div class="stat-card"><div class="stat-val" id="r-eng">—</div><div class="stat-lbl">Engagement rate</div></div>
+        <div class="stat-card"><div class="stat-val" id="r-fmt">—</div><div class="stat-lbl">Best format</div></div>
+      </div>
+      <div class="grid3">
+        <div class="card"><div class="section-label">🎬 Top reels</div><div id="r-reels"><div class="empty">Generate to load.</div></div></div>
+        <div class="card"><div class="section-label">🃏 Top carousels</div><div id="r-cars"><div class="empty">Generate to load.</div></div></div>
+        <div class="card"><div class="section-label">🖼 Top statics</div><div id="r-statics"><div class="empty">Generate to load.</div></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><div class="section-label">📊 Content insights</div><div id="r-insights"><div class="empty">Generate to load.</div></div></div>
+        <div class="card"><div class="section-label">🤖 Agent recommendations</div><div id="r-recos"><div class="empty">Generate to load.</div></div></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ---- AUTH ----
+const SYSTEM = `You are the AI brain of the Aakash Social Media Command Centre. 
+Aakash Institute is India's leading JEE and NEET coaching brand.
+Think simultaneously as: Social Media Manager + Content Strategist + Trend Analyst + Creative Director + Growth Marketer + Competitor Researcher.
+Primary goal: answer "What should Aakash post next and why?"
+Primary platform: Instagram. Secondary: YouTube Shorts, LinkedIn, X.
+Content pillars: Topper Stories, NEET/JEE Tips, Motivation, Parent Stories, Faculty Content, Course Promos, Results, Admissions, Exam Updates.
+Brand voice: aspirational, authentic, student-first. Hinglish is welcome and often preferred.
+Always avoid: generic motivational quotes, low-value facts, repetitive admission promos.
+Always prioritise: student aspirations, emotions, parent pride, rank stories, exam strategy, faculty authority, timely exam updates.
+Return ONLY valid JSON arrays — no markdown, no backticks, no prose outside JSON.`;
+
+function login(){
+  const p=document.getElementById('pwd').value;
+  if(!p){return;}
+  sessionStorage.setItem('pwd',p);
+  verify(p);
+}
+async function verify(p){
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':p,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:10,messages:[{role:'user',content:'ping'}]})});
+    if(r.status===401){document.getElementById('login-err').textContent='Invalid API key — please check and try again.';sessionStorage.removeItem('pwd');return;}
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('app').style.display='grid';
+    document.getElementById('topbar-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  }catch(e){document.getElementById('login-err').textContent='Connection error. Try again.';}
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  const p=sessionStorage.getItem('pwd');
+  if(p){verify(p);}
+});
+
+// ---- NAV ----
+function show(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
+}
+document.querySelectorAll('.ftag').forEach(t=>t.addEventListener('click',()=>t.classList.toggle('on')));
+document.getElementById('cal-focus').addEventListener('change',function(){
+  document.getElementById('custom-cal').style.display=this.value==='custom'?'block':'none';
+});
+
+// ---- API ----
+async function claude(prompt,useSearch){
+  const key=sessionStorage.getItem('pwd');
+  const body={model:'claude-sonnet-4-6',max_tokens:2000,system:SYSTEM,messages:[{role:'user',content:prompt}]};
+  if(useSearch)body.tools=[{type:'web_search_20250305',name:'web_search'}];
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify(body)});
+  const d=await r.json();
+  let txt='';for(const b of(d.content||[])){if(b.type==='text')txt+=b.text;}
+  txt=txt.replace(/```json|```/g,'').trim();
+  const s=txt.indexOf('['),e=txt.lastIndexOf(']');
+  if(s===-1)throw new Error('Parse error');
+  return JSON.parse(txt.slice(s,e+1));
+}
+
+function loading(el,msg){document.getElementById(el).innerHTML=`<div class="empty"><span class="spinner"></span>${msg||'Loading...'}</div>`;}
+function err(el,msg){document.getElementById(el).innerHTML=`<div class="err-box">${msg||'Something went wrong. Try again.'}</div>`;}
+function disBtn(id,on){const b=document.getElementById(id);if(b)b.disabled=on;}
+
+const scoreClass={High:'score-high',Medium:'score-med',Low:'score-low',Ignore:'score-low'};
+const fmtClass={Reel:'pill-reel',Carousel:'pill-carousel',Static:'pill-static',Story:'pill-story','YouTube Shorts':'pill-reel'};
+const pillClass={NEET:'pill-neet',JEE:'pill-jee',Topper:'pill-topper',Motivation:'pill-fire',Faculty:'pill-carousel',Promo:'pill-static',Parent:'pill-topper',Foundation:'pill-story',Tip:'pill-jee'};
+
+// ---- M1: BRIEF ----
+async function fetchBrief(){
+  loading('brief-results','Generating your morning brief...');disBtn('btn-brief',true);
+  try{
+    const data=await claude(`Generate a morning brief for the Aakash Institute social media team for today (${new Date().toDateString()}).
+Scan current JEE/NEET/education trends and news. Produce 8–10 brief items.
+JSON array: {"level":"High|Medium|Ignore","trend":"trend or topic name","action":"Create Reel|Carousel|Static|Short","reason":"why Aakash should act on this today","priority":number_1_to_100}
+Sort by priority descending.`,true);
+    const icons={High:'🔥',Medium:'⚡',Ignore:'❌'};
+    const cls={High:'fire',Medium:'med',Ignore:'skip'};
+    let html='';
+    for(const d of data){
+      html+=`<div class="brief-item">
+        <div class="brief-icon ${cls[d.level]||'med'}">${icons[d.level]||'⚡'}</div>
+        <div class="brief-body">
+          <div class="brief-title">${d.trend}</div>
+          <div class="brief-action">→ ${d.action}</div>
+          <div class="brief-reason">${d.reason}</div>
+        </div>
+        <div class="brief-prio" style="color:${d.priority>=80?'var(--fire)':d.priority>=50?'var(--amber)':'var(--text3)'}">${d.priority}</div>
+      </div>`;
+    }
+    document.getElementById('brief-results').innerHTML=html||'<div class="empty">No brief items generated.</div>';
+  }catch(e){err('brief-results','Could not generate brief. Check API key.');}
+  disBtn('btn-brief',false);
+}
+
+// ---- M1b: DASHBOARD ----
+async function fetchDash(){
+  loading('dash-opp','Scanning opportunities...');loading('dash-events','Loading events...');loading('dash-inventory','Loading...');disBtn('btn-dash',true);
+  try{
+    const data=await claude(`Generate an executive dashboard snapshot for Aakash Institute social media (${new Date().toDateString()}).
+Return a JSON array with these types:
+- {"type":"opportunity","title":"...","format":"Reel|Carousel|Static","score":number,"reason":"..."}  (4 items)
+- {"type":"event","date":"...","name":"...","content":"suggested content type","urgency":"High|Medium|Low"} (4 items)
+- {"type":"inventory","pillar":"...","status":"Strong|Needs attention|Gap","count":number,"note":"..."} (4 items)
+- {"type":"meta","opportunities":number,"trending":number,"events":number,"topScore":number} (1 item)`,true);
+    const opps=data.filter(d=>d.type==='opportunity');
+    const events=data.filter(d=>d.type==='event');
+    const inv=data.filter(d=>d.type==='inventory');
+    const meta=data.find(d=>d.type==='meta')||{};
+    if(meta.opportunities)document.getElementById('d-opportunities').textContent=meta.opportunities;
+    if(meta.trending)document.getElementById('d-trending').textContent=meta.trending;
+    if(meta.events)document.getElementById('d-events').textContent=meta.events;
+    if(meta.topScore)document.getElementById('d-priority').textContent=meta.topScore+'/100';
+    document.getElementById('dash-opp').innerHTML=opps.map(o=>`<div class="opp-row" style="grid-template-columns:auto 1fr auto auto">
+      <span class="pill ${fmtClass[o.format]||'pill-reel'}">${o.format}</span>
+      <div><div class="opp-title">${o.title}</div><div class="opp-sub">${o.reason}</div></div>
+      <div class="prio-num">${o.score}</div>
+    </div>`).join('');
+    document.getElementById('dash-events').innerHTML=events.map(e=>`<div class="news-item">
+      <div class="news-title">${e.name}</div>
+      <div class="news-meta"><span>${e.date}</span><span class="pill ${e.urgency==='High'?'pill-fire':e.urgency==='Medium'?'pill-jee':'pill-story'}">${e.urgency}</span></div>
+      <div class="news-relevance">→ ${e.content}</div>
+    </div>`).join('');
+    document.getElementById('dash-inventory').innerHTML=`<div class="grid3">${inv.map(i=>`<div class="card-sm"><div style="font-size:10px;font-weight:600;color:${i.status==='Strong'?'var(--green)':i.status==='Gap'?'var(--red)':'var(--amber)'};margin-bottom:3px">${i.status}</div><div style="font-size:12px;font-weight:500;color:var(--text)">${i.pillar}</div><div style="font-size:11px;color:var(--text2);margin-top:2px">${i.note}</div></div>`).join('')}</div>`;
+  }catch(e){err('dash-opp','Error loading dashboard.');}
+  disBtn('btn-dash',false);
+}
+
+// ---- M3: TRENDS ----
+async function fetchTrends(){
+  const platforms=[...document.querySelectorAll('#panel-trends .ftag.on')].map(t=>t.dataset.val).filter(Boolean);
+  document.getElementById('trends-tbody').innerHTML=`<tr><td colspan="5"><div class="empty"><span class="spinner"></span>Scanning ${platforms.join(', ')}...</div></td></tr>`;
+  loading('news-nta','Loading NTA updates...');loading('news-social','Loading social buzz...');disBtn('btn-trends',true);
+  try{
+    const data=await claude(`Search the web for today's trending content on: ${platforms.join(', ')} related to JEE, NEET, Indian education.
+Also find latest NTA news and education social buzz from the past 7 days.
+Return a JSON array:
+- {"type":"trend","platform":"...","trend":"...","opportunity":"Reel|Carousel|Static|Shorts","score":number,"reason":"...","level":"High|Medium|Ignore"} (8 items)
+- {"type":"nta","title":"...","summary":"...","source":"...","relevance":"..."}  (3 items)
+- {"type":"social","title":"...","summary":"...","source":"...","relevance":"..."} (3 items)`,true);
+    const trends=data.filter(d=>d.type==='trend');
+    const nta=data.filter(d=>d.type==='nta');
+    const social=data.filter(d=>d.type==='social');
+    const icons={High:'🔥',Medium:'⚡',Ignore:'❌'};
+    document.getElementById('trends-tbody').innerHTML=trends.map(t=>`<tr>
+      <td><div style="font-size:12px;font-weight:500;color:var(--text)">${t.trend}</div></td>
+      <td><span class="pill ${t.platform.includes('Instagram')?'pill-neet':t.platform.includes('YouTube')?'pill-reel':'pill-carousel'}">${t.platform}</span></td>
+      <td><span class="pill ${fmtClass[t.opportunity]||'pill-reel'}">${t.opportunity}</span></td>
+      <td><span class="score ${scoreClass[t.level]||'score-med'}">${icons[t.level]||'⚡'} ${t.score}/100</span></td>
+      <td style="color:var(--text2)">${t.reason}</td>
+    </tr>`).join('');
+    const renderNews=items=>items.map(i=>`<div class="news-item"><div class="news-title">${i.title}</div><div class="news-meta">${i.source}</div><div class="news-relevance">→ ${i.relevance}</div></div>`).join('');
+    document.getElementById('news-nta').innerHTML=renderNews(nta)||'<div class="empty">No NTA updates.</div>';
+    document.getElementById('news-social').innerHTML=renderNews(social)||'<div class="empty">No social buzz.</div>';
+  }catch(e){document.getElementById('trends-tbody').innerHTML=`<tr><td colspan="5"><div class="err-box">Scan failed. Try again.</div></td></tr>`;}
+  disBtn('btn-trends',false);
+}
+
+// ---- M4: OPPORTUNITIES ----
+async function fetchOpp(){
+  const topic=document.getElementById('opp-topic').value.trim();
+  loading('opp-results',topic?`Converting "${topic}" into content...`:'Scanning live trends for opportunities...');disBtn('btn-opp',true);
+  try{
+    const prompt=topic
+      ?`Convert this trend/topic into Aakash Instagram content opportunities: "${topic}"`
+      :`Search for the top 3 current trending topics in JEE/NEET/Indian education and convert each into content opportunities for Aakash Institute.`;
+    const data=await claude(`${prompt}
+For each trend produce 3 content formats.
+JSON array: {"trend":"...","format":"Reel|Carousel|Static","hook":"opening hook text","structure":"brief 3-step structure","cta":"call to action","priority":number}
+Return 6–9 items total.`,!!topic?false:true);
+    const grouped={};
+    for(const d of data){if(!grouped[d.trend])grouped[d.trend]=[];grouped[d.trend].push(d);}
+    let html='';
+    for(const [trend,items] of Object.entries(grouped)){
+      html+=`<div class="card" style="margin-bottom:0">
+        <div class="section-label" style="margin-bottom:10px">💡 ${trend}</div>
+        <div class="grid3">${items.map(i=>`<div class="card-sm">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span class="pill ${fmtClass[i.format]||'pill-reel'}">${i.format}</span>
+            <span style="font-size:10px;font-weight:600;color:var(--sky)">${i.priority}/100</span>
+          </div>
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.4">"${i.hook}"</div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:4px">${i.structure}</div>
+          <div style="font-size:10px;color:var(--amber)">CTA: ${i.cta}</div>
+        </div>`).join('')}</div>
+      </div>`;
+    }
+    document.getElementById('opp-results').innerHTML=html||'<div class="empty">No opportunities found.</div>';
+  }catch(e){err('opp-results','Could not generate opportunities.');}
+  disBtn('btn-opp',false);
+}
+
+// ---- M7: COMPETITORS ----
+async function fetchComp(){
+  loading('comp-tbody','Scanning Allen, PW, Unacademy, Vedantu...');disBtn('btn-comp',true);
+  try{
+    const data=await claude(`Search the web for recent social media activity (past 2 weeks) by these Indian education competitors: Allen Career Institute, Physics Wallah (PW), Unacademy, Vedantu.
+JSON array: {"brand":"...","bestPost":"...","format":"Reel|Carousel|Static|Shorts","engagementReason":"why it performed well","aakashLesson":"specific learning for Aakash","aakashDifferentiator":"how Aakash can do this better or differently"}`,true);
+    document.getElementById('comp-tbody').innerHTML=data.map(d=>`<div class="comp-row">
+      <div style="font-size:12px;font-weight:500;color:var(--text)">${d.brand}</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.4">${d.bestPost}</div>
+      <span class="pill ${fmtClass[d.format]||'pill-reel'}">${d.format}</span>
+      <div style="font-size:11px;color:var(--text2)">${d.engagementReason}</div>
+      <div><div style="font-size:11px;color:var(--sky);margin-bottom:3px">${d.aakashLesson}</div><div style="font-size:10px;color:var(--green)">↑ ${d.aakashDifferentiator}</div></div>
+    </div>`).join('');
+  }catch(e){err('comp-tbody','Competitor scan failed.');}
+  disBtn('btn-comp',false);
+}
+
+// ---- M2: CALENDAR ----
+async function fetchCal(){
+  const focus=document.getElementById('cal-focus').value==='custom'?document.getElementById('cal-custom').value:document.getElementById('cal-focus').value;
+  document.getElementById('cal-tbody').innerHTML=`<tr><td colspan="6"><div class="empty"><span class="spinner"></span>Building calendar for "${focus}"...</div></td></tr>`;
+  disBtn('btn-cal',true);
+  try{
+    const data=await claude(`Generate a 7-day Instagram content calendar for Aakash Institute for: "${focus}".
+Mix pillars: Topper Stories, JEE/NEET Tips, Motivation, Parent Stories, Faculty Content, Course Promos, Results, Admissions.
+Use formats: Reel, Carousel, Static, Story.
+JSON array: {"date":"...","pillar":"...","contentType":"Reel|Carousel|Static|Story","objective":"1 sentence goal","hook":"opening hook text","format":"Reel|Carousel|Static|Story","event":"exam/festival or empty"}
+Return exactly 7 items.`);
+    document.getElementById('cal-events').textContent=data.filter(d=>d.event).length;
+    document.getElementById('cal-tbody').innerHTML=data.map(d=>`<tr>
+      <td><span style="font-size:11px;font-weight:500">${d.date}</span>${d.event?`<br><span style="font-size:9px;color:var(--red)">📌 ${d.event}</span>`:''}</td>
+      <td><span class="pill ${pillClass[d.pillar]||'pill-jee'}">${d.pillar}</span></td>
+      <td><span class="pill ${fmtClass[d.contentType]||'pill-reel'}">${d.contentType}</span></td>
+      <td style="font-size:11px;color:var(--text2)">${d.objective}</td>
+      <td style="font-size:11px;color:var(--text);font-weight:500;font-style:italic">"${d.hook}"</td>
+      <td><span class="pill ${fmtClass[d.format]||'pill-reel'}">${d.format}</span></td>
+    </tr>`).join('');
+  }catch(e){document.getElementById('cal-tbody').innerHTML=`<tr><td colspan="6"><div class="err-box">Calendar generation failed.</div></td></tr>`;}
+  disBtn('btn-cal',false);
+}
+
+// ---- M5: HOOKS ----
+async function fetchHooks(){
+  const topic=document.getElementById('hook-topic').value.trim();
+  const fmt=document.getElementById('hook-format').value;
+  if(!topic){document.getElementById('hooks-results').innerHTML='<div class="err-box" style="grid-column:1/-1">Enter a topic first.</div>';return;}
+  document.getElementById('hooks-results').innerHTML=`<div class="empty" style="grid-column:1/-1"><span class="spinner"></span>Generating hook bank for "${topic}"...</div>`;
+  disBtn('btn-hooks',true);
+  try{
+    const data=await claude(`Write 8 scroll-stopping opening hooks for a ${fmt} about: "${topic}".
+Target audience: Indian students aged 15–22 aspiring for JEE/NEET. Aakash Institute brand.
+Generate these types: Curiosity Hook, Emotional Hook, Contrarian Hook, Story Hook, Hinglish Hook, Stat Hook, Question Hook, Fear/FOMO Hook (one of each).
+JSON array: {"type":"hook type","hook":"the hook text","whyItWorks":"1 sentence explanation","emotionTriggered":"curiosity|emotion|fear|aspiration|pride"}`);
+    const emotionColor={curiosity:'var(--sky)',emotion:'var(--purple)',fear:'var(--red)',aspiration:'var(--yellow)',pride:'var(--green)'};
+    document.getElementById('hooks-results').innerHTML=data.map(h=>`<div class="hook-card">
+      <div class="hook-type" style="color:${emotionColor[h.emotionTriggered]||'var(--text3)'}">● ${h.type}</div>
+      <div class="hook-text">"${h.hook}"</div>
+      <div class="hook-why">${h.whyItWorks}</div>
+    </div>`).join('');
+  }catch(e){document.getElementById('hooks-results').innerHTML='<div class="err-box" style="grid-column:1/-1">Hook generation failed.</div>';}
+  disBtn('btn-hooks',false);
+}
+
+// ---- M6: CAROUSEL ----
+async function fetchCarousel(){
+  const topic=document.getElementById('car-topic').value.trim();
+  if(!topic){document.getElementById('car-results').innerHTML='<div class="err-box">Enter a topic first.</div>';return;}
+  loading('car-results',`Building 6-slide carousel for "${topic}"...`);disBtn('btn-car',true);
+  try{
+    const data=await claude(`Generate a complete 6-slide Instagram carousel for Aakash Institute about: "${topic}".
+Optimised for saves and shares. Each slide must have a clear purpose.
+JSON array: {"slide":number,"type":"Hook|Problem|Mistake|Strategy|Solution|CTA","headline":"slide headline (max 8 words)","body":"2–3 lines of copy","designNote":"brief visual direction","saveHook":"why viewer will save this slide"}`);
+    let html=`<div class="card"><div class="section-label" style="margin-bottom:12px">📱 Carousel: ${topic}</div><div class="slide-grid">`;
+    for(const s of data){
+      const typeColors={Hook:'var(--fire)',Problem:'var(--red)',Mistake:'var(--amber)',Strategy:'var(--sky)',Solution:'var(--green)',CTA:'var(--purple)'};
+      html+=`<div class="slide-row">
+        <div class="slide-num" style="color:${typeColors[s.type]||'var(--text3)'}">${String(s.slide).padStart(2,'0')}</div>
+        <div><div class="slide-type" style="color:${typeColors[s.type]||'var(--text3)'}">${s.type}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">💾 ${s.saveHook}</div></div>
+        <div><div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px">${s.headline}</div><div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:4px">${s.body}</div><div style="font-size:10px;color:var(--text3)">🎨 ${s.designNote}</div></div>
+      </div>`;
+    }
+    html+='</div></div>';
+    document.getElementById('car-results').innerHTML=html;
+  }catch(e){err('car-results','Carousel generation failed.');}
+  disBtn('btn-car',false);
+}
+
+// ---- M9: VAULT ----
+async function fetchVault(){
+  document.getElementById('vault-grid').innerHTML=`<div class="vault-col"><div class="vault-head"><span>🎬 Reels</span></div><div class="empty"><span class="spinner"></span>Loading...</div></div><div class="vault-col"><div class="vault-head"><span>🃏 Carousels</span></div></div><div class="vault-col"><div class="vault-head"><span>🖼 Statics</span></div></div>`;
+  disBtn('btn-vault',true);
+  try{
+    const data=await claude(`Generate the Aakash Institute content idea vault. 10 Reel ideas, 10 Carousel ideas, 10 Static ideas. All JEE/NEET/education focused.
+JSON array: {"format":"Reel|Carousel|Static","category":"Topper story|Study hack|Motivation|Faculty tip|Mistakes|Strategy|Exam pattern|Counselling|Quote|Result|Announcement|Parent story","idea":"specific idea max 10 words","hook":"1-line hook","priority":"High|Medium|Low"}
+Return exactly 30 items.`);
+    const reels=data.filter(d=>d.format==='Reel');
+    const cars=data.filter(d=>d.format==='Carousel');
+    const stats=data.filter(d=>d.format==='Static');
+    const renderVault=items=>items.map(i=>`<div class="vault-item">
+      <div class="vault-cat">${i.category} · <span style="color:${i.priority==='High'?'var(--fire)':i.priority==='Medium'?'var(--amber)':'var(--text3)'}">${i.priority}</span></div>
+      <div class="vault-idea">${i.idea}</div>
+      <div style="font-size:10px;color:var(--sky);margin-top:2px;font-style:italic">"${i.hook}"</div>
+    </div>`).join('');
+    document.getElementById('vault-grid').innerHTML=`
+      <div class="vault-col"><div class="vault-head"><span>🎬 Reels</span><span>${reels.length}</span></div>${renderVault(reels)}</div>
+      <div class="vault-col"><div class="vault-head"><span>🃏 Carousels</span><span>${cars.length}</span></div>${renderVault(cars)}</div>
+      <div class="vault-col"><div class="vault-head"><span>🖼 Statics</span><span>${stats.length}</span></div>${renderVault(stats)}</div>`;
+  }catch(e){document.getElementById('vault-grid').innerHTML='<div class="err-box" style="grid-column:1/-1">Vault load failed.</div>';}
+  disBtn('btn-vault',false);
+}
+
+// ---- M8: REPORTS ----
+async function fetchReports(){
+  loading('r-reels','Loading...');loading('r-cars','Loading...');loading('r-statics','Loading...');loading('r-insights','Loading...');loading('r-recos','Loading...');disBtn('btn-reports',true);
+  try{
+    const data=await claude(`Generate a realistic analytics & insights report for Aakash Institute's Instagram.
+JSON array:
+- {"type":"stat","key":"followers|reach|eng|fmt","value":"..."} (4 items)
+- {"type":"top_reel","title":"...","metric":"e.g. 2.1M views","insight":"..."} (3 items)
+- {"type":"top_carousel","title":"...","metric":"...","insight":"..."} (3 items)
+- {"type":"top_static","title":"...","metric":"...","insight":"..."} (3 items)
+- {"type":"insight","multiplier":"e.g. 3.2x","text":"insight about content performance"} (4 items)
+- {"type":"reco","text":"specific actionable recommendation"} (4 items)
+Make insights specific to JEE/NEET education content performance.`);
+    const stats=data.filter(d=>d.type==='stat');
+    const keys={followers:'r-followers',reach:'r-reach',eng:'r-eng',fmt:'r-fmt'};
+    for(const s of stats){const el=document.getElementById(keys[s.key]);if(el)el.textContent=s.value;}
+    const renderTop=items=>items.map(i=>`<div class="insight-row"><div class="insight-num">${i.metric}</div><div class="insight-text"><div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px">${i.title}</div>${i.insight}</div></div>`).join('');
+    document.getElementById('r-reels').innerHTML=renderTop(data.filter(d=>d.type==='top_reel'));
+    document.getElementById('r-cars').innerHTML=renderTop(data.filter(d=>d.type==='top_carousel'));
+    document.getElementById('r-statics').innerHTML=renderTop(data.filter(d=>d.type==='top_static'));
+    document.getElementById('r-insights').innerHTML=data.filter(d=>d.type==='insight').map(i=>`<div class="insight-row"><div class="insight-num">${i.multiplier}</div><div class="insight-text">${i.text}</div></div>`).join('');
+    document.getElementById('r-recos').innerHTML=data.filter(d=>d.type==='reco').map(r=>`<div class="reco-box">→ ${r.text}</div>`).join('');
+  }catch(e){err('r-insights','Reports failed. Try again.');}
+  disBtn('btn-reports',false);
+}
+</script>
+</body>
+</html>
